@@ -4,20 +4,26 @@
         xsi:schemaLocation="http://thelia.net/schema/dic/module http://thelia.net/schema/dic/module/module-2_2.xsd">
     <fullnamespace>ForcePhone\ForcePhone</fullnamespace>
     <descriptive locale="en_US">
-        <title>Set the phone input mandatory for the customer</title>
+        <title>Require the customer to enter its home phone number, mobile phone number or both</title>
     </descriptive>
     <descriptive locale="fr_FR">
-        <title>Oblige le client à laisser un numéro de téléphone</title>
+        <title>Oblige le client à laisser un numéro de téléphone fixe, mobile ou les deux</title>
     </descriptive>
     <languages>
         <language>en_US</language>
         <language>fr_FR</language>
     </languages>
-    <version>1.0</version>
+    <version>1.1</version>
     <authors>
         <author>
             <name>Etienne Perriere</name>
             <email>eperriere@openstudio.fr</email>
+        </author>
+        <author>
+            <name>Franck Allimant</name>
+            <company>CQFDev</company>
+            <email>franck@cqfdev.fr</email>
+            <website>www.cqfdev.fr</website>
         </author>
     </authors>
     <type>classic</type>

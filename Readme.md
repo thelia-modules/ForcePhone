@@ -1,6 +1,6 @@
 # Force Phone
 
-Set phone input as mandatory for customers
+This module sets the mobile phone number, the home phone nuumner or both as required in the customer and address forms.
 
 ## Installation
 
@@ -19,7 +19,8 @@ composer require thelia/force-phone-module:~1.0
 
 ## Usage
 
-Just activate the module and the first phone input will be mandatory.
+Activate the module and the home phone number becomes required in the customer and address forms.
+Go to module configuration to select which phone numbers should be required.
 
 Affected pages :
 - register
@@ -28,7 +29,7 @@ Affected pages :
 
 ## Other
 
-Be sure to set good translations on phone inputs' labels.
+Be sure to set proper translations for phone inputs' labels.
 
 You can find translation for the mandatory input in your administration panel:
 ` Configuration --> Translation --> Modules --> Set the phone input mandatory for the customer --> Core files `

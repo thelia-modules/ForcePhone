@@ -1,0 +1,50 @@
+<div class="row">
+    <div class="col-md-12 general-block-decorator">
+        <div class="row">
+            <div class="col-md-12 title title-without-tabs">
+                {intl d='forcephone.bo.default' l="Force Phone Configuration"}
+            </div>
+        </div>
+
+        <div class="form-container">
+            <div class="row">
+                <div class="col-md-12">
+                    {form name="forcephone_configuration"}
+                        <form action="{url path="/admin/module/forcephone/configure"}" method="post">
+                            {form_hidden_fields form=$form}
+
+                            {include file = "includes/inner-form-toolbar.html"
+                                hide_flags = true
+                                page_url   = "{url path='/admin/module/ForcePhone'}"
+                                close_url  = "{url path='/admin/modules'}"
+                            }
+
+                            {if $form_error}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="alert alert-danger">{$form_error_message}</div>
+                                    </div>
+                                </div>
+                            {/if}
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <p>{intl d='forcephone.bo.default' l='Please check below the phone numbers that must be mandatory in the customer and addresses forms'}</p>
+                                    {custom_render_form_field form=$form field="force_phone"}
+                                        <input type="checkbox" {form_field_attributes form=$form field="force_phone"} {if $force_phone}checked{/if}>
+                                        {$label}
+                                    {/custom_render_form_field}
+
+                                    {custom_render_form_field form=$form field="force_cellphone"}
+                                        <input type="checkbox" {form_field_attributes form=$form field="force_cellphone"} {if $force_cellphone}checked{/if}>
+                                    {$label}
+                                    {/custom_render_form_field}
+                                </div>
+                            </div>
+                        </form>
+                    {/form}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
