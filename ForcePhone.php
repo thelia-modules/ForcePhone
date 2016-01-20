@@ -12,6 +12,7 @@
 
 namespace ForcePhone;
 
+use Propel\Runtime\Connection\ConnectionInterface;
 use Thelia\Module\BaseModule;
 
 /**
@@ -23,4 +24,13 @@ class ForcePhone extends BaseModule
 {
     /** @var string */
     const DOMAIN_NAME = 'forcephone';
+
+
+    public function postActivation(ConnectionInterface $con = null)
+    {
+        // Define default values
+        if (null === self::getConfigValue('force_phone', null)) {
+            self::setConfigValue('force_phone', 1);
+        }
+    }
 }
