@@ -1,6 +1,6 @@
 # Force Phone
 
-This module sets the mobile phone number, the home phone nuumner or both as required in the customer and address forms.
+This module sets the mobile phone number, the home phone number or both as required in the customer and address forms.
 
 ## Installation
 
@@ -20,7 +20,7 @@ composer require thelia/force-phone-module:~1.0
 ## Usage
 
 Activate the module and the home phone number becomes required in the customer and address forms.
-Go to module configuration to select which phone numbers should be required.
+Go to module configuration to select which phone numbers (home, mobile or both) should be required.
 
 Affected pages :
 - register
