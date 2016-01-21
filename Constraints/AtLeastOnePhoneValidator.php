@@ -20,7 +20,7 @@ use Thelia\Core\Translation\Translator;
 class AtLeastOnePhoneValidator extends ConstraintValidator
 {
     /**
-     * Checks if the passed value is valid.
+     * Checks if at least one phone number is provided
      *
      * @param mixed $value The value that should be validated
      * @param Constraint $constraint The constraint for the validation
