@@ -10,27 +10,10 @@
 /*      file that was distributed with this source code.                             */
 /*************************************************************************************/
 
-namespace ForcePhone;
+namespace ForcePhone\Constraints;
 
-use Propel\Runtime\Connection\ConnectionInterface;
-use Thelia\Module\BaseModule;
+use Symfony\Component\Validator\Constraint;
 
-/**
- * Class ForcePhone
- * @package ForcePhone
- * @author Etienne Perriere <eperriere@openstudio.fr>
- */
-class ForcePhone extends BaseModule
+class AtLeastOnePhone extends Constraint
 {
-    /** @var string */
-    const DOMAIN_NAME = 'forcephone';
-
-
-    public function postActivation(ConnectionInterface $con = null)
-    {
-        // Define default values
-        if (null === self::getConfigValue('force_phone', null)) {
-            self::setConfigValue('force_phone', 1);
-        }
-    }
 }

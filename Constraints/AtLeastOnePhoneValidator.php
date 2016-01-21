@@ -10,27 +10,32 @@
 /*      file that was distributed with this source code.                             */
 /*************************************************************************************/
 
-namespace ForcePhone;
+namespace ForcePhone\Constraints;
 
-use Propel\Runtime\Connection\ConnectionInterface;
-use Thelia\Module\BaseModule;
+use ForcePhone\ForcePhone;
+use Symfony\Component\Validator\Constraint;
+use Symfony\Component\Validator\ConstraintValidator;
+use Thelia\Core\Translation\Translator;
 
-/**
- * Class ForcePhone
- * @package ForcePhone
- * @author Etienne Perriere <eperriere@openstudio.fr>
- */
-class ForcePhone extends BaseModule
+class AtLeastOnePhoneValidator extends ConstraintValidator
 {
-    /** @var string */
-    const DOMAIN_NAME = 'forcephone';
-
-
-    public function postActivation(ConnectionInterface $con = null)
+    /**
+     * Checks if at least one phone number is provided
+     *
+     * @param mixed $value The value that should be validated
+     * @param Constraint $constraint The constraint for the validation
+     *
+     * @api
+     */
+    public function validate($value, Constraint $constraint)
     {
-        // Define default values
-        if (null === self::getConfigValue('force_phone', null)) {
-            self::setConfigValue('force_phone', 1);
+        $data = $this->context->getRoot()->getData();
+
+        if (empty($data["phone"]) && empty($data["cellphone"])) {
+            $this->context->addViolationAt(
+                "phone",
+                Translator::getInstance()->trans("Please enter at least one phone number.", [], ForcePhone::DOMAIN_NAME)
+            );
         }
     }
 }

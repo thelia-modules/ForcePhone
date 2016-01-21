@@ -4,6 +4,16 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://thelia.net/schema/dic/config http://thelia.net/schema/dic/config/thelia-1.0.xsd">
 
+    <forms>
+        <form name="forcephone_configuration" class="ForcePhone\Form\ConfigForm" />
+    </forms>
+
+    <hooks>
+        <hook id="forcephone.configuration.hook" class="ForcePhone\Hook\HookManager" scope="request">
+            <tag name="hook.event_listener" event="module.configuration" type="back" method="onModuleConfigure" />
+        </hook>
+    </hooks>
+
     <services>
         <service id="forcephone.services" class="ForcePhone\EventListeners\ForcePhoneEventListener" scope="request">
             <argument id="request" type="service"/>
