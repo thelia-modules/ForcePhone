@@ -43,6 +43,17 @@ class ConfigForm extends BaseForm
                     ]
                 ]
             )
+            ->add(
+                'force_one',
+                'checkbox',
+                [
+                    'required' => false,
+                    'label' => $this->translator->trans('At least one phone number', [], ForcePhone::DOMAIN_NAME),
+                    'label_attr' => [
+                        'for' => 'force_one',
+                    ]
+                ]
+            )
         ;
     }
 

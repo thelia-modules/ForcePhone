@@ -12,8 +12,11 @@
 
 namespace ForcePhone\EventListeners;
 
+use ForcePhone\Constraints\AtLeastOnePhone;
 use ForcePhone\ForcePhone;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\ExecutionContextInterface;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Core\Event\TheliaFormEvent;
 use Thelia\Core\HttpFoundation\Request;
@@ -45,35 +48,61 @@ class ForcePhoneEventListener implements EventSubscriberInterface
     public function forcePhoneInput(TheliaFormEvent $event)
     {
         if ($this->request->fromApi() === false) {
-            if (ForcePhone::getConfigValue('force_phone', false)) {
+            if (ForcePhone::getConfigValue('force_one', false)) {
+                $constraints = [
+                    new AtLeastOnePhone(),
+                ];
+            } else {
+                $constraints = [];
+            }
+
+            $forcePhone = ForcePhone::getConfigValue('force_phone', false);
+
+            if (! empty($constraints) || $forcePhone) {
                 $event->getForm()->getFormBuilder()
                     ->remove('phone')
                     ->add(
                         "phone",
                         "text",
                         [
-                            "label"      => Translator::getInstance()->trans("Phone"),
-                            "label_attr" => [ "for" => "phone" ],
-                            "required"   => true,
+                            "constraints" => $constraints,
+                            "label"       => Translator::getInstance()->trans("Phone"),
+                            "label_attr"  => [ "for" => "phone" ],
+                            "required"    => $forcePhone,
                         ]
                     )
                 ;
             }
 
-            if (ForcePhone::getConfigValue('force_cellphone', false)) {
+            $forceCellPhone = ForcePhone::getConfigValue('force_cellphone', false);
+
+            if (! empty($constraints) || $forceCellPhone) {
                 $event->getForm()->getFormBuilder()
                     ->remove('cellphone')
                     ->add(
                         "cellphone",
                         "text",
                         [
-                            "label"      => Translator::getInstance()->trans("Cellphone"),
-                            "label_attr" => [ "for" => "cellphone" ],
-                            "required"   => true,
+                            "constraints" => $constraints,
+                            "label"       => Translator::getInstance()->trans("Cellphone"),
+                            "label_attr"  => [ "for" => "cellphone" ],
+                            "required"    => $forceCellPhone,
                         ]
                     )
                 ;
             }
+        }
+    }
+
+    public function checkAtLeastOnePhoneNumberIsDefined($value, ExecutionContextInterface $context)
+    {
+        $data = $context->getRoot()->getData();
+
+        if (empty($data["phone"]) && empty($data["cellphone"])) {
+            $context->addViolationAt(
+                "phone",
+                Translator::getInstance()->trans("Please enter a home or mobile phone number")
+            );
         }
     }
 }
