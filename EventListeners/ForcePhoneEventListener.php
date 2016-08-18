@@ -16,6 +16,7 @@ use ForcePhone\Constraints\AtLeastOnePhone;
 use ForcePhone\ForcePhone;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\ExecutionContextInterface;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Core\Event\TheliaFormEvent;
@@ -65,7 +66,7 @@ class ForcePhoneEventListener implements EventSubscriberInterface
                         "phone",
                         "text",
                         [
-                            "constraints" => $constraints,
+                            "constraints" => $forcePhone ? [ new NotBlank() ] : $constraints,
                             "label"       => Translator::getInstance()->trans("Phone"),
                             "label_attr"  => [ "for" => "phone" ],
                             "required"    => $forcePhone,
@@ -83,7 +84,7 @@ class ForcePhoneEventListener implements EventSubscriberInterface
                         "cellphone",
                         "text",
                         [
-                            "constraints" => $constraints,
+                            "constraints" => $forceCellPhone ? [ new NotBlank() ] : $constraints,
                             "label"       => Translator::getInstance()->trans("Cellphone"),
                             "label_attr"  => [ "for" => "cellphone" ],
                             "required"    => $forceCellPhone,
