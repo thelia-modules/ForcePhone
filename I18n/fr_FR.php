@@ -9,4 +9,6 @@ return array(
     'Phone' => 'Téléphone fixe',
     'Please enter a home or mobile phone number' => 'Merci d\'indiquer un numéro de téléphone fixe ou mobile',
     'Please enter at least one phone number.' => 'Merci d\'indiquer au moins un numéro de téléphone',
+    'Check phone numbers format' => 'Vérifier le format de la saisie du téléphone',
+    'Please enter a valid phone number' => 'Merci d\'indiquer un numéro de téléphone valide',
 );

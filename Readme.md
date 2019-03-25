@@ -4,18 +4,20 @@ This module sets the mobile phone number, the home phone number, both or one of 
 
 ## Installation
 
-### Manually
-
-* Copy the module into ```<thelia_root>/local/modules/``` directory and be sure that the name of the module is ForcePhone.
-* Activate it in your Thelia administration panel
+**Since 1.2 need to be installed by Composer**
 
 ### Composer
 
 Add it in your main Thelia composer.json file
 
 ```
-composer require thelia/force-phone-module:~1.0
+composer require thelia/force-phone-module:~1.2
 ```
+
+### Manually (only for version < 1.2)
+
+* Copy the module into ```<thelia_root>/local/modules/``` directory and be sure that the name of the module is ForcePhone.
+* Activate it in your Thelia administration panel
 
 ## Usage
 

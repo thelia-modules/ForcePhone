@@ -3,7 +3,8 @@
   "license": "LGPL-3.0+",
   "type": "thelia-module",
   "require": {
-    "thelia/installer": "~1.1"
+    "thelia/installer": "~1.1",
+    "giggsey/libphonenumber-for-php": "^8.10"
   },
   "extra": {
     "installer-name": "ForcePhone"
