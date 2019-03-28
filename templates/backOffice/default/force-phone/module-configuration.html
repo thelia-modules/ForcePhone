@@ -37,12 +37,17 @@
 
                                     {custom_render_form_field form=$form field="force_cellphone"}
                                         <input type="checkbox" {form_field_attributes form=$form field="force_cellphone"} {if $force_cellphone}checked{/if}>
-                                    {$label}
+                                        {$label}
                                     {/custom_render_form_field}
 
                                     {custom_render_form_field form=$form field="force_one"}
                                         <input type="checkbox" {form_field_attributes form=$form field="force_one"} {if $force_one}checked{/if}>
-                                    {$label}
+                                        {$label}
+                                    {/custom_render_form_field}
+
+                                    {custom_render_form_field form=$form field="validate_format"}
+                                        <input type="checkbox" {form_field_attributes form=$form field="validate_format"} {if $validate_format}checked{/if}>
+                                        {$label}
                                     {/custom_render_form_field}
                                 </div>
                             </div>

@@ -9,4 +9,6 @@ return array(
     'Phone' => 'Phone',
     'Please enter a home or mobile phone number' => 'Please enter a home or mobile phone number',
     'Please enter at least one phone number.' => 'Please enter at least one phone number.',
+    'Check phone numbers format' => 'Check phone numbers format',
+    'Please enter a valid phone number' => 'Please enter a valid phone number',
 );

@@ -54,6 +54,17 @@ class ConfigForm extends BaseForm
                     ]
                 ]
             )
+            ->add(
+                'validate_format',
+                'checkbox',
+                [
+                    'required' => false,
+                    'label' => $this->translator->trans('Check phone numbers format', [], ForcePhone::DOMAIN_NAME),
+                    'label_attr' => [
+                        'for' => 'validate_format',
+                    ]
+                ]
+            )
         ;
     }
 
