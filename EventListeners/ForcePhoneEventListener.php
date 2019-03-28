@@ -129,15 +129,30 @@ class ForcePhoneEventListener implements EventSubscriberInterface
             try {
                 $phoneUtil = PhoneNumberUtil::getInstance();
 
-                $phoneNumberProto = $phoneUtil->parse($address->getPhone(), $address->getCountry()->getIsoalpha2());
+                if (!empty($address->getPhone())) {
+                    $phoneNumberProto = $phoneUtil->parse($address->getPhone(), $address->getCountry()->getIsoalpha2());
 
-                $isValid = $phoneUtil->isValidNumber($phoneNumberProto);
+                    $isValid = $phoneUtil->isValidNumber($phoneNumberProto);
 
-                if ($isValid) {
-                    $phone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
+                    if ($isValid) {
+                        $phone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
 
-                    $address->setPhone($phone);
+                        $address->setPhone($phone);
+                    }
                 }
+
+                if (!empty($address->getCellphone())) {
+                    $phoneNumberProto = $phoneUtil->parse($address->getCellphone(), $address->getCountry()->getIsoalpha2());
+
+                    $isValid = $phoneUtil->isValidNumber($phoneNumberProto);
+
+                    if ($isValid) {
+                        $phone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
+
+                        $address->setCellphone($phone);
+                    }
+                }
+
             } catch (\Exception $exception) {
                 Tlog::getInstance()->warning('Error on update phone format');
             }
@@ -149,26 +164,36 @@ class ForcePhoneEventListener implements EventSubscriberInterface
      */
     public function customerPhoneUpdate(CustomerEvent $customerEvent)
     {
-        Tlog::getInstance()->warning('customerPhoneUpdate');
         $validateFormat = ForcePhone::getConfigValue('validate_format', false);
 
         if ($this->request->fromApi() === false && $validateFormat) {
             $address = $customerEvent->getCustomer()->getDefaultAddress();
-            Tlog::getInstance()->warning($address->getId() . '/' . $address->getPhone());
 
             try {
                 $phoneUtil = PhoneNumberUtil::getInstance();
 
-                $phoneNumberProto = $phoneUtil->parse($address->getPhone(), $address->getCountry()->getIsoalpha2());
+                if (!empty($address->getPhone())) {
+                    $phoneNumberProto = $phoneUtil->parse($address->getPhone(), $address->getCountry()->getIsoalpha2());
 
-                $isValid = $phoneUtil->isValidNumber($phoneNumberProto);
+                    $isValid = $phoneUtil->isValidNumber($phoneNumberProto);
 
-                if ($isValid) {
-                    $phone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
+                    if ($isValid) {
+                        $phone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
 
-                    Tlog::getInstance()->warning(var_export($phone, true));
+                        $address->setPhone($phone)->save();
+                    }
+                }
 
-                    $address->setPhone($phone)->save();
+                if (!empty($address->getCellphone())) {
+                    $phoneNumberProto = $phoneUtil->parse($address->getCellphone(), $address->getCountry()->getIsoalpha2());
+
+                    $isValid = $phoneUtil->isValidNumber($phoneNumberProto);
+
+                    if ($isValid) {
+                        $phone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
+
+                        $address->setCellphone($phone)->save();
+                    }
                 }
             } catch (\Exception $exception) {
                 Tlog::getInstance()->warning('Error on update phone format');
