@@ -13,23 +13,33 @@
 namespace ForcePhone\Controller;
 
 use ForcePhone\ForcePhone;
+use ForcePhone\Form\ConfigForm;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
 use Thelia\Core\Thelia;
+use Thelia\Core\Translation\Translator;
 use Thelia\Form\Exception\FormValidationException;
 use Thelia\Tools\URL;
 use Thelia\Tools\Version\Version;
+use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * @Route("/admin/module/forcephone", name="forcephone_config")
+ */
 class ConfigureController extends BaseAdminController
 {
-    public function configure()
+    /**
+     * @Route("/configure", name="_save", methods="POST")
+     */
+    public function configure(RequestStack $requestStack)
     {
         if (null !== $response = $this->checkAuth(AdminResources::MODULE, 'forcephone', AccessManager::UPDATE)) {
             return $response;
         }
 
-        $configurationForm = $this->createForm('forcephone_configuration');
+        $configurationForm = $this->createForm(ConfigForm::getName());
 
         $message = null;
 
@@ -55,7 +65,7 @@ class ConfigureController extends BaseAdminController
             );
 
             // Redirect to the success URL,
-            if ($this->getRequest()->get('save_mode') == 'stay') {
+            if ($requestStack->getCurrentRequest()->get('save_mode') === 'stay') {
                 // If we have to stay on the same page, redisplay the configuration page/
                 $url = '/admin/module/ForcePhone';
             } else {
@@ -71,7 +81,7 @@ class ConfigureController extends BaseAdminController
         }
 
         $this->setupFormErrorContext(
-            $this->getTranslator()->trans("ForcePhone configuration", [], ForcePhone::DOMAIN_NAME),
+            Translator::getInstance()->trans("ForcePhone configuration", [], ForcePhone::DOMAIN_NAME),
             $message,
             $configurationForm,
             $ex

@@ -14,11 +14,11 @@
         </hook>
     </hooks>
 
-    <services>
+    <!--<services>
         <service id="forcephone.services" class="ForcePhone\EventListeners\ForcePhoneEventListener" scope="request">
             <argument id="request" type="service"/>
             <tag name="kernel.event_subscriber"/>
         </service>
-    </services>
+    </services>-->
     
 </config>

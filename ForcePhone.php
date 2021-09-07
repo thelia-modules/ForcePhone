@@ -13,6 +13,7 @@
 namespace ForcePhone;
 
 use Propel\Runtime\Connection\ConnectionInterface;
+use Symfony\Component\DependencyInjection\Loader\Configurator\ServicesConfigurator;
 use Thelia\Module\BaseModule;
 
 /**
@@ -26,11 +27,19 @@ class ForcePhone extends BaseModule
     const DOMAIN_NAME = 'forcephone';
 
 
-    public function postActivation(ConnectionInterface $con = null)
+    public function postActivation(ConnectionInterface $con = null): void
     {
         // Define default values
         if (null === self::getConfigValue('force_phone', null)) {
             self::setConfigValue('force_phone', 1);
         }
+    }
+
+    public static function configureServices(ServicesConfigurator $servicesConfigurator): void
+    {
+        $servicesConfigurator->load(self::getModuleCode().'\\', __DIR__)
+            ->exclude([THELIA_MODULE_DIR . ucfirst(self::getModuleCode()). "/I18n/*"])
+            ->autowire(true)
+            ->autoconfigure(true);
     }
 }
