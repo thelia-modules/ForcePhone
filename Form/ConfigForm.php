@@ -13,6 +13,7 @@
 namespace ForcePhone\Form;
 
 use ForcePhone\ForcePhone;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Thelia\Form\BaseForm;
 
@@ -23,7 +24,7 @@ class ConfigForm extends BaseForm
         $this->formBuilder
             ->add(
                 'force_phone',
-                'checkbox',
+                CheckboxType::class,
                 [
                     'required' => false,
                     'label' => $this->translator->trans('Home phone number', [], ForcePhone::DOMAIN_NAME),
@@ -34,7 +35,7 @@ class ConfigForm extends BaseForm
             )
             ->add(
                 'force_cellphone',
-                'checkbox',
+                CheckboxType::class,
                 [
                     'required' => false,
                     'label' => $this->translator->trans('Mobile phone number', [], ForcePhone::DOMAIN_NAME),
@@ -45,7 +46,7 @@ class ConfigForm extends BaseForm
             )
             ->add(
                 'force_one',
-                'checkbox',
+                CheckboxType::class,
                 [
                     'required' => false,
                     'label' => $this->translator->trans('At least one phone number', [], ForcePhone::DOMAIN_NAME),
@@ -56,7 +57,7 @@ class ConfigForm extends BaseForm
             )
             ->add(
                 'validate_format',
-                'checkbox',
+                CheckboxType::class,
                 [
                     'required' => false,
                     'label' => $this->translator->trans('Check phone numbers format', [], ForcePhone::DOMAIN_NAME),
@@ -71,8 +72,8 @@ class ConfigForm extends BaseForm
     /**
      * @return string the name of you form. This name must be unique
      */
-    public function getName()
+    public static function getName()
     {
-        return 'forcephone_config';
+        return 'forcephone_configuration';
     }
 }

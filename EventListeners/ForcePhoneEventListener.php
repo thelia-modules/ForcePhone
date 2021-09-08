@@ -18,14 +18,17 @@ use ForcePhone\ForcePhone;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Validator\Constraints\NotBlank;
-use Thelia\Core\Event\Address\AddressEvent;
-use Thelia\Core\Event\Customer\CustomerEvent;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Core\Event\TheliaFormEvent;
-use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\Translation\Translator;
 use Thelia\Log\Tlog;
+use Thelia\Model\Customer;
+use Thelia\Model\Event\AddressEvent;
+use Thelia\Model\Event\CustomerEvent;
 
 /**
  * Class ForcePhoneEventListener
@@ -34,15 +37,15 @@ use Thelia\Log\Tlog;
  */
 class ForcePhoneEventListener implements EventSubscriberInterface
 {
-    protected $request;
+    protected ?Request $request;
 
     /**
      * ForcePhoneEventListener constructor.
-     * @param Request $request
+     * @param RequestStack $requestStack
      */
-    public function __construct(Request $request)
+    public function __construct(RequestStack $requestStack)
     {
-        $this->request = $request;
+        $this->request = $requestStack->getCurrentRequest();
     }
 
     /**
@@ -55,10 +58,10 @@ class ForcePhoneEventListener implements EventSubscriberInterface
             TheliaEvents::FORM_AFTER_BUILD . '.thelia_customer_update'  => ['forcePhoneInput', 128],
             TheliaEvents::FORM_AFTER_BUILD . '.thelia_address_update'   => ['forcePhoneInput', 128],
             TheliaEvents::FORM_AFTER_BUILD . '.thelia_address_creation' => ['forcePhoneInput', 128],
-            TheliaEvents::AFTER_CREATECUSTOMER                          => ['customerPhoneUpdate', 125],
-            TheliaEvents::AFTER_UPDATECUSTOMER                          => ['customerPhoneUpdate', 125],
-            TheliaEvents::BEFORE_UPDATEADDRESS                          => ['addressPhoneUpdate', 125],
-            TheliaEvents::BEFORE_CREATEADDRESS                          => ['addressPhoneUpdate', 125],
+            CustomerEvent::POST_INSERT                                  => ['customerPhoneUpdate', 125],
+            CustomerEvent::POST_UPDATE                                  => ['customerPhoneUpdate', 125],
+            AddressEvent::PRE_INSERT                                    => ['addressPhoneUpdate', 125],
+            AddressEvent::PRE_UPDATE                                    => ['addressPhoneUpdate', 125],
         ];
     }
 
@@ -67,53 +70,52 @@ class ForcePhoneEventListener implements EventSubscriberInterface
      */
     public function forcePhoneInput(TheliaFormEvent $event)
     {
-        if ($this->request->fromApi() === false) {
-            $constraints = [];
+        $constraints = [];
 
-            if (ForcePhone::getConfigValue('force_one', false)) {
-                $constraints[] = new AtLeastOnePhone();
-            }
-
-            $validateFormat = ForcePhone::getConfigValue('validate_format', false);
-
-            if ($validateFormat) {
-                $constraints[] = new CheckPhoneFormat();
-            }
-
-            $forcePhone = ForcePhone::getConfigValue('force_phone', false);
-
-            if (!empty($constraints) || $forcePhone) {
-                $event->getForm()->getFormBuilder()
-                    ->remove('phone')
-                    ->add(
-                        'phone',
-                        'text',
-                        [
-                            'constraints' => $forcePhone ? array_merge([new NotBlank()], $constraints) : $constraints,
-                            'label'       => Translator::getInstance()->trans('Phone'),
-                            'label_attr'  => ['for' => 'phone'],
-                            'required'    => $forcePhone,
-                        ]
-                    );
-            }
-
-            $forceCellPhone = ForcePhone::getConfigValue('force_cellphone', false);
-
-            if (!empty($constraints) || $forceCellPhone) {
-                $event->getForm()->getFormBuilder()
-                    ->remove('cellphone')
-                    ->add(
-                        'cellphone',
-                        'text',
-                        [
-                            'constraints' => $forceCellPhone ? array_merge([new NotBlank()], $constraints) : $constraints,
-                            'label'       => Translator::getInstance()->trans('Cellphone'),
-                            'label_attr'  => ['for' => 'cellphone'],
-                            'required'    => $forceCellPhone,
-                        ]
-                    );
-            }
+        if (ForcePhone::getConfigValue('force_one', false)) {
+            $constraints[] = new AtLeastOnePhone();
         }
+
+        $validateFormat = ForcePhone::getConfigValue('validate_format', false);
+
+        if ($validateFormat) {
+            $constraints[] = new CheckPhoneFormat();
+        }
+
+        $forcePhone = ForcePhone::getConfigValue('force_phone', false);
+
+        if (!empty($constraints) || $forcePhone) {
+            $event->getForm()->getFormBuilder()
+                ->remove('phone')
+                ->add(
+                    'phone',
+                    TextType::class,
+                    [
+                        'constraints' => $forcePhone ? array_merge([new NotBlank()], $constraints) : $constraints,
+                        'label'       => Translator::getInstance()->trans('Phone'),
+                        'label_attr'  => ['for' => 'phone'],
+                        'required'    => $forcePhone,
+                    ]
+                );
+        }
+
+        $forceCellPhone = ForcePhone::getConfigValue('force_cellphone', false);
+
+        if (!empty($constraints) || $forceCellPhone) {
+            $event->getForm()->getFormBuilder()
+                ->remove('cellphone')
+                ->add(
+                    'cellphone',
+                    TextType::class,
+                    [
+                        'constraints' => $forceCellPhone ? array_merge([new NotBlank()], $constraints) : $constraints,
+                        'label'       => Translator::getInstance()->trans('Cellphone'),
+                        'label_attr'  => ['for' => 'cellphone'],
+                        'required'    => $forceCellPhone,
+                    ]
+                );
+        }
+
     }
 
     /**
@@ -123,8 +125,8 @@ class ForcePhoneEventListener implements EventSubscriberInterface
     {
         $validateFormat = ForcePhone::getConfigValue('validate_format', false);
 
-        if ($this->request->fromApi() === false && $validateFormat) {
-            $address = $addressEvent->getAddress();
+        if ($validateFormat) {
+            $address = $addressEvent->getModel();
 
             try {
                 $phoneUtil = PhoneNumberUtil::getInstance();
@@ -166,8 +168,8 @@ class ForcePhoneEventListener implements EventSubscriberInterface
     {
         $validateFormat = ForcePhone::getConfigValue('validate_format', false);
 
-        if ($this->request->fromApi() === false && $validateFormat) {
-            $address = $customerEvent->getCustomer()->getDefaultAddress();
+        if ($validateFormat) {
+            $address = $customerEvent->getModel()->getDefaultAddress();
 
             try {
                 $phoneUtil = PhoneNumberUtil::getInstance();

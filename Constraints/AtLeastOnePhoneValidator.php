@@ -32,10 +32,9 @@ class AtLeastOnePhoneValidator extends ConstraintValidator
         $data = $this->context->getRoot()->getData();
 
         if (empty($data["phone"]) && empty($data["cellphone"])) {
-            $this->context->addViolationAt(
-                "phone",
-                Translator::getInstance()->trans("Please enter at least one phone number.", [], ForcePhone::DOMAIN_NAME)
-            );
+            $this->context->buildViolation(Translator::getInstance()->trans("Please enter at least one phone number.", [], ForcePhone::DOMAIN_NAME))
+                ->atPath('phone')
+                ->addViolation();
         }
     }
 }
