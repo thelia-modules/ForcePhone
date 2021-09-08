@@ -7,4 +7,12 @@
     <route id="forcephone.config" path="/admin/module/forcephone/configure" methods="post">
         <default key="_controller">ForcePhone\Controller\ConfigureController::configure</default>
     </route>
+
+    <route id="forcephone.check_order_phone" path="/forcephone/check/order-phone/{orderId}" methods="get">
+        <default key="_controller">ForcePhone\Controller\ApiController::checkPhoneOrder</default>
+    </route>
+
+    <route id="forcephone.reformat_phone" path="/forcephone/format-phone/{phone}/{countryId}" methods="get">
+        <default key="_controller">ForcePhone\Controller\ApiController::reformatPhoneNumber</default>
+    </route>
 </routes>
