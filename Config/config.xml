@@ -8,6 +8,10 @@
         <form name="forcephone_configuration" class="ForcePhone\Form\ConfigForm" />
     </forms>
 
+    <commands>
+        <command class="ForcePhone\Command\UpdatePhoneNumberCommand" />
+    </commands>
+
     <hooks>
         <hook id="forcephone.configuration.hook" class="ForcePhone\Hook\HookManager" scope="request">
             <tag name="hook.event_listener" event="module.configuration" type="back" method="onModuleConfigure" />
