@@ -14,6 +14,10 @@
         </hook>
     </hooks>
 
+    <commands>
+        <command class="ForcePhone\Command\UpdatePhoneNumberCommand" />
+    </commands>
+
     <!--<services>
         <service id="forcephone.services" class="ForcePhone\EventListeners\ForcePhoneEventListener" scope="request">
             <argument id="request" type="service"/>
