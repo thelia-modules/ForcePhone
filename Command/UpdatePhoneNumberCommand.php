@@ -25,6 +25,7 @@ class UpdatePhoneNumberCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->initRequest();
         $addresses = AddressQuery::create()->find();
 
         foreach ($addresses as $address){
