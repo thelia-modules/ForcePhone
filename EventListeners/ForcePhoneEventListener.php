@@ -17,6 +17,8 @@ use ForcePhone\Constraints\CheckPhoneFormat;
 use ForcePhone\ForcePhone;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
+use OpenApi\Events\ModelValidationEvent;
+use OpenApi\Model\Api\Address;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Thelia\Core\Event\Address\AddressEvent;
@@ -26,6 +28,8 @@ use Thelia\Core\Event\TheliaFormEvent;
 use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\Translation\Translator;
 use Thelia\Log\Tlog;
+use Thelia\Model\CountryQuery;
+use function Complex\add;
 
 /**
  * Class ForcePhoneEventListener
@@ -59,6 +63,7 @@ class ForcePhoneEventListener implements EventSubscriberInterface
             TheliaEvents::AFTER_UPDATECUSTOMER                          => ['customerPhoneUpdate', 125],
             TheliaEvents::BEFORE_UPDATEADDRESS                          => ['addressPhoneUpdate', 125],
             TheliaEvents::BEFORE_CREATEADDRESS                          => ['addressPhoneUpdate', 125],
+            'open_api_model_validation_address' => ['validateOpenApiAddress', 125]
         ];
     }
 
@@ -199,5 +204,53 @@ class ForcePhoneEventListener implements EventSubscriberInterface
                 Tlog::getInstance()->warning('Error on update phone format');
             }
         }
+    }
+
+    public function validateOpenApiAddress(ModelValidationEvent $event)
+    {
+        /** @var Address $address */
+        $address = $event->getModel();
+        $country = CountryQuery::create()->filterById($address->getCountryId())->findOne();
+        $violations = $event->getViolations();
+
+        $phoneUtil = PhoneNumberUtil::getInstance();
+
+        if (!empty($address->getPhone())) {
+            try {
+                $phoneNumberProto = $phoneUtil->parse($address->getPhone(), $country->getIsoalpha2());
+
+                $isValid = $phoneUtil->isValidNumber($phoneNumberProto);
+
+                if (!$isValid) {
+                    throw new \Exception('Invalid phone number');
+                }
+
+                $phone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
+                $address->setPhone($phone);
+            }catch (\Exception $exception){
+                $violations['phone'] = $event->getModelFactory()->buildModel('SchemaViolation', ['message' => $exception->getMessage()]);
+            }
+        }
+
+        if (!empty($address->getCellphone())) {
+            try {
+                $phoneNumberProto = $phoneUtil->parse($address->getCellphone(), $country->getIsoalpha2());
+
+                $isValid = $phoneUtil->isValidNumber($phoneNumberProto);
+
+                if (!$isValid) {
+                    throw new \Exception('Invalid cellphone number');
+                }
+
+                $cellphone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
+                $address->setCellphone($cellphone);
+            }catch (\Exception $exception){
+                $violations['cellphone'] = $event->getModelFactory()->buildModel('SchemaViolation', ['message' => $exception->getMessage()]);
+            }
+        }
+
+        $event->setModel($address);
+
+        $event->setViolations($violations);
     }
 }
