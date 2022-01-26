@@ -208,6 +208,11 @@ class ForcePhoneEventListener implements EventSubscriberInterface
 
     public function validateOpenApiAddress(ModelValidationEvent $event)
     {
+        
+        if ($event->getGroups() === 'read' ) {
+            return;
+        }
+
         /** @var Address $address */
         $address = $event->getModel();
         $country = CountryQuery::create()->filterById($address->getCountryId())->findOne();
@@ -228,7 +233,12 @@ class ForcePhoneEventListener implements EventSubscriberInterface
                 $phone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
                 $address->setPhone($phone);
             }catch (\Exception $exception){
-                $violations['phone'] = $event->getModelFactory()->buildModel('SchemaViolation', ['message' => $exception->getMessage()]);
+                $message =                     Translator::getInstance()->trans(
+                    'Please enter a valid phone number',
+                    [],
+                    ForcePhone::DOMAIN_NAME
+                );
+                $violations['phoneNumber'] = $event->getModelFactory()->buildModel('SchemaViolation', ['message' => $message]);
             }
         }
 
@@ -245,7 +255,12 @@ class ForcePhoneEventListener implements EventSubscriberInterface
                 $cellphone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
                 $address->setCellphone($cellphone);
             }catch (\Exception $exception){
-                $violations['cellphone'] = $event->getModelFactory()->buildModel('SchemaViolation', ['message' => $exception->getMessage()]);
+                $message =                     Translator::getInstance()->trans(
+                    'Please enter a valid phone number',
+                    [],
+                    ForcePhone::DOMAIN_NAME
+                );
+                $violations['cellphoneNumber'] = $event->getModelFactory()->buildModel('SchemaViolation', ['message' => $message]);
             }
         }
 
