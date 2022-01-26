@@ -233,6 +233,11 @@ class ForcePhoneEventListener implements EventSubscriberInterface
                 $phone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
                 $address->setPhone($phone);
             }catch (\Exception $exception){
+                $message =                     Translator::getInstance()->trans(
+                    'Please enter a valid phone number',
+                    [],
+                    ForcePhone::DOMAIN_NAME
+                );
                 $violations['phoneNumber'] = $event->getModelFactory()->buildModel('SchemaViolation', ['message' => $message]);
             }
         }
