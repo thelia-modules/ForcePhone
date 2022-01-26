@@ -213,11 +213,10 @@ class ForcePhoneEventListener implements EventSubscriberInterface
         $country = CountryQuery::create()->filterById($address->getCountryId())->findOne();
         $violations = $event->getViolations();
 
-        try {
+        $phoneUtil = PhoneNumberUtil::getInstance();
 
-            $phoneUtil = PhoneNumberUtil::getInstance();
-
-            if (!empty($address->getPhone())) {
+        if (!empty($address->getPhone())) {
+            try {
                 $phoneNumberProto = $phoneUtil->parse($address->getPhone(), $country->getIsoalpha2());
 
                 $isValid = $phoneUtil->isValidNumber($phoneNumberProto);
@@ -228,9 +227,13 @@ class ForcePhoneEventListener implements EventSubscriberInterface
 
                 $phone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
                 $address->setPhone($phone);
+            }catch (\Exception $exception){
+                $violations['phone'] = $event->getModelFactory()->buildModel('SchemaViolation', ['message' => $exception->getMessage()]);
             }
+        }
 
-            if (!empty($address->getCellphone())) {
+        if (!empty($address->getCellphone())) {
+            try {
                 $phoneNumberProto = $phoneUtil->parse($address->getCellphone(), $country->getIsoalpha2());
 
                 $isValid = $phoneUtil->isValidNumber($phoneNumberProto);
@@ -239,19 +242,15 @@ class ForcePhoneEventListener implements EventSubscriberInterface
                     throw new \Exception('Invalid cellphone number');
                 }
 
-                $phone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
-                $address->setCellphone($phone);
+                $cellphone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
+                $address->setCellphone($cellphone);
+            }catch (\Exception $exception){
+                $violations['cellphone'] = $event->getModelFactory()->buildModel('SchemaViolation', ['message' => $exception->getMessage()]);
             }
-
-            $event->setModel($address);
-
-        }catch (\Exception $exception){
-            $violations[] = $event->getModelFactory()->buildModel('SchemaViolation',
-                [
-                    'key' => $event->getPropertyPatchPrefix().'forcePhone',
-                    'error' => $exception->getMessage()
-                ]);
         }
+
+        $event->setModel($address);
+
         $event->setViolations($violations);
     }
 }
