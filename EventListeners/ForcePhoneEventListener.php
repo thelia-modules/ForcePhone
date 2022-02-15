@@ -1,14 +1,21 @@
 <?php
-/*************************************************************************************/
-/*      This file is part of the Thelia package.                                     */
-/*                                                                                   */
+
+/*
+ * This file is part of the Thelia package.
+ * http://www.thelia.net
+ *
+ * (c) OpenStudio <info@thelia.net>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 /*      Copyright (c) OpenStudio                                                     */
 /*      email : dev@thelia.net                                                       */
 /*      web : http://www.thelia.net                                                  */
-/*                                                                                   */
+
 /*      For the full copyright and license information, please view the LICENSE.txt  */
 /*      file that was distributed with this source code.                             */
-/*************************************************************************************/
 
 namespace ForcePhone\EventListeners;
 
@@ -17,6 +24,8 @@ use ForcePhone\Constraints\CheckPhoneFormat;
 use ForcePhone\ForcePhone;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
+use OpenApi\Events\ModelValidationEvent;
+use OpenApi\Model\Api\Address;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,13 +35,13 @@ use Thelia\Core\Event\TheliaEvents;
 use Thelia\Core\Event\TheliaFormEvent;
 use Thelia\Core\Translation\Translator;
 use Thelia\Log\Tlog;
-use Thelia\Model\Customer;
+use Thelia\Model\CountryQuery;
 use Thelia\Model\Event\AddressEvent;
 use Thelia\Model\Event\CustomerEvent;
 
 /**
- * Class ForcePhoneEventListener
- * @package ForcePhone\EventListeners
+ * Class ForcePhoneEventListener.
+ *
  * @author Etienne Perriere <eperriere@openstudio.fr>
  */
 class ForcePhoneEventListener implements EventSubscriberInterface
@@ -41,7 +50,6 @@ class ForcePhoneEventListener implements EventSubscriberInterface
 
     /**
      * ForcePhoneEventListener constructor.
-     * @param RequestStack $requestStack
      */
     public function __construct(RequestStack $requestStack)
     {
@@ -54,21 +62,19 @@ class ForcePhoneEventListener implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            TheliaEvents::FORM_AFTER_BUILD . '.thelia_customer_create'  => ['forcePhoneInput', 128],
-            TheliaEvents::FORM_AFTER_BUILD . '.thelia_customer_update'  => ['forcePhoneInput', 128],
-            TheliaEvents::FORM_AFTER_BUILD . '.thelia_address_update'   => ['forcePhoneInput', 128],
-            TheliaEvents::FORM_AFTER_BUILD . '.thelia_address_creation' => ['forcePhoneInput', 128],
-            CustomerEvent::POST_INSERT                                  => ['customerPhoneUpdate', 125],
-            CustomerEvent::POST_UPDATE                                  => ['customerPhoneUpdate', 125],
-            AddressEvent::PRE_INSERT                                    => ['addressPhoneUpdate', 125],
-            AddressEvent::PRE_UPDATE                                    => ['addressPhoneUpdate', 125],
+            TheliaEvents::FORM_AFTER_BUILD.'.thelia_customer_create' => ['forcePhoneInput', 128],
+            TheliaEvents::FORM_AFTER_BUILD.'.thelia_customer_update' => ['forcePhoneInput', 128],
+            TheliaEvents::FORM_AFTER_BUILD.'.thelia_address_update' => ['forcePhoneInput', 128],
+            TheliaEvents::FORM_AFTER_BUILD.'.thelia_address_creation' => ['forcePhoneInput', 128],
+            CustomerEvent::POST_INSERT => ['customerPhoneUpdate', 125],
+            CustomerEvent::POST_UPDATE => ['customerPhoneUpdate', 125],
+            AddressEvent::PRE_INSERT => ['addressPhoneUpdate', 125],
+            AddressEvent::PRE_UPDATE => ['addressPhoneUpdate', 125],
+            ModelValidationEvent::MODEL_VALIDATION_EVENT_PREFIX.'address' => ['validateOpenApiAddress', 125],
         ];
     }
 
-    /**
-     * @param TheliaFormEvent $event
-     */
-    public function forcePhoneInput(TheliaFormEvent $event)
+    public function forcePhoneInput(TheliaFormEvent $event): void
     {
         $constraints = [];
 
@@ -92,9 +98,9 @@ class ForcePhoneEventListener implements EventSubscriberInterface
                     TextType::class,
                     [
                         'constraints' => $forcePhone ? array_merge([new NotBlank()], $constraints) : $constraints,
-                        'label'       => Translator::getInstance()->trans('Phone'),
-                        'label_attr'  => ['for' => 'phone'],
-                        'required'    => $forcePhone,
+                        'label' => Translator::getInstance()->trans('Phone'),
+                        'label_attr' => ['for' => 'phone'],
+                        'required' => $forcePhone,
                     ]
                 );
         }
@@ -109,19 +115,15 @@ class ForcePhoneEventListener implements EventSubscriberInterface
                     TextType::class,
                     [
                         'constraints' => $forceCellPhone ? array_merge([new NotBlank()], $constraints) : $constraints,
-                        'label'       => Translator::getInstance()->trans('Cellphone'),
-                        'label_attr'  => ['for' => 'cellphone'],
-                        'required'    => $forceCellPhone,
+                        'label' => Translator::getInstance()->trans('Cellphone'),
+                        'label_attr' => ['for' => 'cellphone'],
+                        'required' => $forceCellPhone,
                     ]
                 );
         }
-
     }
 
-    /**
-     * @param AddressEvent $addressEvent
-     */
-    public function addressPhoneUpdate(AddressEvent $addressEvent)
+    public function addressPhoneUpdate(AddressEvent $addressEvent): void
     {
         $validateFormat = ForcePhone::getConfigValue('validate_format', false);
 
@@ -154,17 +156,13 @@ class ForcePhoneEventListener implements EventSubscriberInterface
                         $address->setCellphone($phone);
                     }
                 }
-
             } catch (\Exception $exception) {
                 Tlog::getInstance()->warning('Error on update phone format');
             }
         }
     }
 
-    /**
-     * @param CustomerEvent $customerEvent
-     */
-    public function customerPhoneUpdate(CustomerEvent $customerEvent)
+    public function customerPhoneUpdate(CustomerEvent $customerEvent): void
     {
         $validateFormat = ForcePhone::getConfigValue('validate_format', false);
 
@@ -201,5 +199,56 @@ class ForcePhoneEventListener implements EventSubscriberInterface
                 Tlog::getInstance()->warning('Error on update phone format');
             }
         }
+    }
+
+    public function validateOpenApiAddress(ModelValidationEvent $event): void
+    {
+        if ($event->getGroups() === 'read') {
+            return;
+        }
+
+        /** @var Address $address */
+        $address = $event->getModel();
+        $country = CountryQuery::create()->filterById($address->getCountryId())->findOne();
+        $violations = $event->getViolations();
+
+        $phoneUtil = PhoneNumberUtil::getInstance();
+
+        if (!empty($address->getPhone())) {
+            try {
+                $phoneNumberProto = $phoneUtil->parse($address->getPhone(), $country->getIsoalpha2());
+
+                $isValid = $phoneUtil->isValidNumber($phoneNumberProto);
+
+                if (!$isValid) {
+                    throw new \Exception('Invalid phone number');
+                }
+
+                $phone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
+                $address->setPhone($phone);
+            } catch (\Exception $exception) {
+                $violations['phone'] = $event->getModelFactory()->buildModel('SchemaViolation', ['message' => $exception->getMessage()]);
+            }
+        }
+
+        if (!empty($address->getCellphone())) {
+            try {
+                $phoneNumberProto = $phoneUtil->parse($address->getCellphone(), $country->getIsoalpha2());
+
+                $isValid = $phoneUtil->isValidNumber($phoneNumberProto);
+
+                if (!$isValid) {
+                    throw new \Exception('Invalid cellphone number');
+                }
+
+                $phone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
+                $address->setCellphone($phone);
+            } catch (\Exception $exception) {
+                $violations['cellphone'] = $event->getModelFactory()->buildModel('SchemaViolation', ['message' => $exception->getMessage()]);
+            }
+        }
+
+        $event->setModel($address);
+        $event->setViolations($violations);
     }
 }
