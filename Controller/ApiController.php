@@ -5,19 +5,19 @@ namespace ForcePhone\Controller;
 
 
 use ForcePhone\ForcePhone;
+use libphonenumber\NumberParseException;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
 use OpenApi\Controller\Front\BaseFrontOpenApiController;
 use OpenApi\Service\OpenApiService;
+use Propel\Runtime\Exception\PropelException;
 use Thelia\Core\HttpFoundation\JsonResponse;
 use Thelia\Model\CountryQuery;
 use Thelia\Model\OrderQuery;
 use Symfony\Component\Routing\Annotation\Route;
 use OpenApi\Annotations as OA;
 
-/**
- * @Route("/open_api", name="")
- */
+#[Route('/open_api')]
 class ApiController extends BaseFrontOpenApiController
 {
     /**
@@ -46,8 +46,12 @@ class ApiController extends BaseFrontOpenApiController
      *     )
      * )
      * )
+     * @param $orderId
+     * @return JsonResponse
+     * @throws NumberParseException
+     * @throws PropelException
      */
-    public function checkPhoneOrder($orderId)
+    public function checkPhoneOrder($orderId): JsonResponse
     {
         $order = OrderQuery::create()->filterById($orderId)->findOne();
 
@@ -128,8 +132,9 @@ class ApiController extends BaseFrontOpenApiController
      *     )
      * )
      * )
+     * @throws NumberParseException
      */
-    public function reformatPhoneNumber($phone, $countryId)
+    public function reformatPhoneNumber($phone, $countryId): JsonResponse
     {
         $phoneUtil = PhoneNumberUtil::getInstance();
         $country = CountryQuery::create()->filterById($countryId)->findOne();
@@ -149,5 +154,4 @@ class ApiController extends BaseFrontOpenApiController
 
         return OpenApiService::jsonResponse($phone);
     }
-
 }

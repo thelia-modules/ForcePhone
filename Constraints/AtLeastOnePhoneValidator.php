@@ -27,7 +27,7 @@ class AtLeastOnePhoneValidator extends ConstraintValidator
      *
      * @api
      */
-    public function validate($value, Constraint $constraint)
+    public function validate(mixed $value, Constraint $constraint): void
     {
         $data = $this->context->getRoot()->getData();
 

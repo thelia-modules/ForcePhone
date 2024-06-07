@@ -14,12 +14,11 @@ namespace ForcePhone\Form;
 
 use ForcePhone\ForcePhone;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Validator\Constraints\NotBlank;
 use Thelia\Form\BaseForm;
 
 class ConfigForm extends BaseForm
 {
-    protected function buildForm()
+    protected function buildForm(): void
     {
         $this->formBuilder
             ->add(
@@ -67,13 +66,5 @@ class ConfigForm extends BaseForm
                 ]
             )
         ;
-    }
-
-    /**
-     * @return string the name of you form. This name must be unique
-     */
-    public static function getName()
-    {
-        return 'forcephone_configuration';
     }
 }
