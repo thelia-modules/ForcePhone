@@ -31,7 +31,7 @@ use Thelia\Model\ModuleConfigQuery;
 
 class HookManager extends BaseHook
 {
-    public function onModuleConfigure(HookRenderEvent $event)
+    public function onModuleConfigure(HookRenderEvent $event): void
     {
         $vars = [];
 
@@ -45,5 +45,17 @@ class HookManager extends BaseHook
         $event->add(
             $this->render('force-phone/module-configuration.html', $vars)
         );
+    }
+
+    public static function getSubscribedHooks(): array
+    {
+        return [
+            "module.configuration" => [
+                [
+                    "type" => "back",
+                    "method" => "onModuleConfigure"
+                ]
+            ]
+        ];
     }
 }

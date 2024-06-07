@@ -25,14 +25,10 @@ use Thelia\Tools\URL;
 use Thelia\Tools\Version\Version;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/admin/module/forcephone", name="forcephone_config")
- */
+#[Route('/admin/module/ForcePhone', name: 'forcephone_config')]
 class ConfigureController extends BaseAdminController
 {
-    /**
-     * @Route("/configure", name="_save", methods="POST")
-     */
+    #[Route('/configure', name: '_save', methods: ['POST'])]
     public function configure(RequestStack $requestStack)
     {
         if (null !== $response = $this->checkAuth(AdminResources::MODULE, 'forcephone', AccessManager::UPDATE)) {
@@ -40,8 +36,6 @@ class ConfigureController extends BaseAdminController
         }
 
         $configurationForm = $this->createForm(ConfigForm::getName());
-
-        $message = null;
 
         try {
             $form = $this->validateForm($configurationForm);
@@ -65,7 +59,7 @@ class ConfigureController extends BaseAdminController
             );
 
             // Redirect to the success URL,
-            if ($requestStack->getCurrentRequest()->get('save_mode') === 'stay') {
+            if ($requestStack->getCurrentRequest()?->get('save_mode') === 'stay') {
                 // If we have to stay on the same page, redisplay the configuration page/
                 $url = '/admin/module/ForcePhone';
             } else {
@@ -90,8 +84,8 @@ class ConfigureController extends BaseAdminController
         // Before 2.2, the errored form is not stored in session
         if (Version::test(Thelia::THELIA_VERSION, '2.2', false, "<")) {
             return $this->render('module-configure', [ 'module_code' => 'ForcePhone' ]);
-        } else {
-            return $this->generateRedirect(URL::getInstance()->absoluteUrl('/admin/module/ForcePhone'));
         }
+
+        return $this->generateRedirect(URL::getInstance()->absoluteUrl('/admin/module/ForcePhone'));
     }
 }

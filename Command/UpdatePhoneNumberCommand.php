@@ -5,8 +5,10 @@ namespace ForcePhone\Command;
 
 
 
+use Exception;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
+use Propel\Runtime\Exception\PropelException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Thelia\Command\ContainerAwareCommand;
@@ -16,14 +18,17 @@ use Thelia\Model\Customer;
 
 class UpdatePhoneNumberCommand extends ContainerAwareCommand
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName("module:ForcePhone:update")
             ->setDescription("Update phone number of all addresses");
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * @throws PropelException
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->initRequest();
         $addresses = AddressQuery::create()->find();
@@ -52,13 +57,13 @@ class UpdatePhoneNumberCommand extends ContainerAwareCommand
         return 0;
     }
 
-    protected function updatePhone($phoneNumber, $isoalpha2, Customer $customer, OutputInterface $output)
+    protected function updatePhone($phoneNumber, $isoalpha2, Customer $customer, OutputInterface $output): ?string
     {
         $phoneUtil = PhoneNumberUtil::getInstance();
 
         try {
             $phoneNumberProto = $phoneUtil->parse($phoneNumber, $isoalpha2);
-        }catch (\Exception $e){
+        }catch (Exception){
             Tlog::getInstance()->error('Phone number '.$phoneNumber.' for customer '.$customer->getRef().' is invalid');
             $output->writeln('Error : Phone number '.$phoneNumber.' for customer '.$customer->getRef().' is invalid');
             return null;
