@@ -171,6 +171,10 @@ class ForcePhoneEventListener implements EventSubscriberInterface
         if ($validateFormat) {
             $address = $customerEvent->getModel()->getDefaultAddress();
 
+            if (!$address) {
+                return;
+            }
+
             try {
                 $phoneUtil = PhoneNumberUtil::getInstance();
 
