@@ -224,13 +224,13 @@ class ForcePhoneEventListener implements EventSubscriberInterface
         $country = CountryQuery::create()->filterById($address->getCountryId())->findOne();
         $phoneUtil = PhoneNumberUtil::getInstance();
 
-        if (empty($address->getPhone() && (bool)ForcePhone::getConfigValue('force_phone', false))) {
+        if (empty($address->getPhone()) && (bool)ForcePhone::getConfigValue('force_phone', false)) {
             $cart->setAddressDeliveryId(null);
             $message = Translator::getInstance()->trans('No phone number found', [], ForcePhone::DOMAIN_NAME);
             throw new PhoneIsRequiredInDeliveryAddressException($message);
         }
 
-        if (empty($address->getCellphone() && (bool)ForcePhone::getConfigValue('force_cellphone', false))) {
+        if (empty($address->getCellphone()) && (bool)ForcePhone::getConfigValue('force_cellphone', false)) {
             $cart->setAddressDeliveryId(null);
             $message = Translator::getInstance()->trans('No cellphone number found', [], ForcePhone::DOMAIN_NAME);
             throw new PhoneIsRequiredInDeliveryAddressException($message);
