@@ -22,21 +22,25 @@ namespace ForcePhone\EventListeners;
 use Exception;
 use ForcePhone\Constraints\AtLeastOnePhone;
 use ForcePhone\Constraints\CheckPhoneFormat;
+use ForcePhone\Exception\PhoneIsRequiredInDeliveryAddressException;
 use ForcePhone\ForcePhone;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
-use OpenApi\Events\ModelValidationEvent;
-use OpenApi\Model\Api\Address;
 use RuntimeException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Thelia\Core\Event\Cart\CartCheckoutEvent;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Core\Event\TheliaFormEvent;
 use Thelia\Core\Translation\Translator;
 use Thelia\Log\Tlog;
+use Thelia\Model\Address;
+use Thelia\Model\AddressQuery;
+use Thelia\Model\CartAddress;
+use Thelia\Model\CartAddressQuery;
 use Thelia\Model\CountryQuery;
 use Thelia\Model\Event\AddressEvent;
 use Thelia\Model\Event\CustomerEvent;
@@ -72,7 +76,8 @@ class ForcePhoneEventListener implements EventSubscriberInterface
             CustomerEvent::POST_UPDATE => ['customerPhoneUpdate', 125],
             AddressEvent::PRE_INSERT => ['addressPhoneUpdate', 125],
             AddressEvent::PRE_UPDATE => ['addressPhoneUpdate', 125],
-            ModelValidationEvent::MODEL_VALIDATION_EVENT_PREFIX.'address' => ['validateOpenApiAddress', 125],
+            TheliaEvents::CART_SET_DELIVERY_ADDRESS => ['validateDeliveryAddress', 125],
+            TheliaEvents::CART_SET_DELIVERY_ADDRESS_MANUAL => ['validateDeliveryAddress', 125],
         ];
     }
 
@@ -207,54 +212,54 @@ class ForcePhoneEventListener implements EventSubscriberInterface
         }
     }
 
-    public function validateOpenApiAddress(ModelValidationEvent $event): void
+    public function validateDeliveryAddress(CartCheckoutEvent $event): void
     {
-        if ($event->getGroups() === 'read') {
-            return;
-        }
+        $cart = $event->getCart();
+        $address = AddressQuery::create()
+            ->useCartAddressQuery()
+            ->filterById($event->getCart()->getAddressDeliveryId())
+            ->endUse()
+            ->findOne();
 
-        /** @var Address $address */
-        $address = $event->getModel();
         $country = CountryQuery::create()->filterById($address->getCountryId())->findOne();
-        $violations = $event->getViolations();
-
         $phoneUtil = PhoneNumberUtil::getInstance();
 
+        if (empty($address->getPhone() && ForcePhone::getConfigValue('force_phone', false))) {
+            $cart->setAddressDeliveryId(null);
+            $message = Translator::getInstance()->trans('No phone number found', [], ForcePhone::DOMAIN_NAME);
+            throw new PhoneIsRequiredInDeliveryAddressException($message);
+        }
+
+        if (empty($address->getCellphone() && ForcePhone::getConfigValue('force_cellphone', false))) {
+            $cart->setAddressDeliveryId(null);
+            $message = Translator::getInstance()->trans('No cellphone number found', [], ForcePhone::DOMAIN_NAME);
+            throw new PhoneIsRequiredInDeliveryAddressException($message);
+        }
+
         if (!empty($address->getPhone())) {
-            try {
-                $phoneNumberProto = $phoneUtil->parse($address->getPhone(), $country?->getIsoalpha2());
+            $phoneNumberProto = $phoneUtil->parse($address->getPhone(), $country?->getIsoalpha2());
 
-                $isValid = $phoneUtil->isValidNumber($phoneNumberProto);
-
-                if (!$isValid) {
-                    throw new RuntimeException('Invalid phone number');
-                }
-
-                $phone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
-                $address->setPhone($phone);
-            } catch (Exception $exception) {
-                $violations['phone'] = $event->getModelFactory()->buildModel('SchemaViolation', ['message' => $exception->getMessage()]);
+            if (!$phoneUtil->isValidNumber($phoneNumberProto)) {
+                $cart->setAddressDeliveryId(null);
+                $message = Translator::getInstance()->trans('Invalid phone number.', [], ForcePhone::DOMAIN_NAME);
+                throw new PhoneIsRequiredInDeliveryAddressException($message);
             }
+
+            $phone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
+            $address->setPhone($phone);
         }
 
         if (!empty($address->getCellphone())) {
-            try {
-                $phoneNumberProto = $phoneUtil->parse($address->getCellphone(), $country?->getIsoalpha2());
+            $phoneNumberProto = $phoneUtil->parse($address->getCellphone(), $country?->getIsoalpha2());
 
-                $isValid = $phoneUtil->isValidNumber($phoneNumberProto);
-
-                if (!$isValid) {
-                    throw new RuntimeException('Invalid cellphone number');
-                }
-
-                $phone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
-                $address->setCellphone($phone);
-            } catch (Exception $exception) {
-                $violations['cellphone'] = $event->getModelFactory()->buildModel('SchemaViolation', ['message' => $exception->getMessage()]);
+            if (!$phoneUtil->isValidNumber($phoneNumberProto)) {
+                $cart->setAddressDeliveryId(null);
+                $message = Translator::getInstance()->trans('Invalid cellphone number.', [], ForcePhone::DOMAIN_NAME);
+                throw new PhoneIsRequiredInDeliveryAddressException($message);
             }
-        }
 
-        $event->setModel($address);
-        $event->setViolations($violations);
+            $phone = $phoneUtil->format($phoneNumberProto, PhoneNumberFormat::INTERNATIONAL);
+            $address->setCellphone($phone);
+        }
     }
 }
