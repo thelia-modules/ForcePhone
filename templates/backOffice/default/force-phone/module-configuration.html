@@ -31,7 +31,7 @@
                                 <div class="col-md-12">
                                     <p>{intl d='forcephone.bo.default' l='Please check below the phone numbers that must be mandatory in the customer and addresses forms'}</p>
                                     {custom_render_form_field form=$form field="force_phone"}
-                                        <input type="checkbox" {form_field_attributes form=$form field="force_phone"} {if $force_phone}checked{/if}>
+                                        <input type="checkbox" {form_field_attributes form=$form field="force_phone"} {if $force_phone|default:null}checked{/if}>
                                         {$label}
                                     {/custom_render_form_field}
 
