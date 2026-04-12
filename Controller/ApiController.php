@@ -14,15 +14,13 @@ use Propel\Runtime\Exception\PropelException;
 use Thelia\Core\HttpFoundation\JsonResponse;
 use Thelia\Model\CountryQuery;
 use Thelia\Model\OrderQuery;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use OpenApi\Annotations as OA;
 
 #[Route('/open_api')]
 class ApiController extends BaseFrontOpenApiController
 {
     /**
-     * @Route("/check/order-phone/{orderId}", name="check_order_phone", methods="GET")
-     *
      * @OA\Get(
      *     path="/check/order-phone/{orderId}",
      *     tags={"force_phone"},
@@ -45,12 +43,8 @@ class ApiController extends BaseFrontOpenApiController
      *          @OA\JsonContent(ref="#/components/schemas/Error")
      *     )
      * )
-     * )
-     * @param $orderId
-     * @return JsonResponse
-     * @throws NumberParseException
-     * @throws PropelException
      */
+    #[Route('/check/order-phone/{orderId}', name: 'check_order_phone', methods: ['GET'])]
     public function checkPhoneOrder($orderId): JsonResponse
     {
         $order = OrderQuery::create()->filterById($orderId)->findOne();
@@ -96,8 +90,6 @@ class ApiController extends BaseFrontOpenApiController
     }
 
     /**
-     * @Route("/format-phone/{phone}/{countryId}", name="format_phone_number", methods="GET")
-     *
      * @OA\Get(
      *     path="/format-phone/{phone}/{countryId}",
      *     tags={"force_phone"},
@@ -131,9 +123,8 @@ class ApiController extends BaseFrontOpenApiController
      *          @OA\JsonContent(ref="#/components/schemas/Error")
      *     )
      * )
-     * )
-     * @throws NumberParseException
      */
+    #[Route('/format-phone/{phone}/{countryId}', name: 'format_phone_number', methods: ['GET'])]
     public function reformatPhoneNumber($phone, $countryId): JsonResponse
     {
         $phoneUtil = PhoneNumberUtil::getInstance();

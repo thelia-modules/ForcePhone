@@ -23,7 +23,7 @@ use Thelia\Core\Translation\Translator;
 use Thelia\Form\Exception\FormValidationException;
 use Thelia\Tools\URL;
 use Thelia\Tools\Version\Version;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/admin/module/ForcePhone', name: 'forcephone_config')]
 class ConfigureController extends BaseAdminController
