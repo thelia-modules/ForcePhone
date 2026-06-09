@@ -23,39 +23,49 @@
 
 namespace ForcePhone\Hook;
 
+use ForcePhone\Form\ConfigForm;
 use ForcePhone\ForcePhone;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Thelia\Core\Event\Hook\HookRenderEvent;
+use Thelia\Core\Form\TheliaFormFactory;
 use Thelia\Core\Hook\BaseHook;
-use Thelia\Model\ModuleConfig;
-use Thelia\Model\ModuleConfigQuery;
+use Thelia\Core\Template\Parser\ParserResolver;
 
 class HookManager extends BaseHook
 {
+    public function __construct(
+        private readonly TheliaFormFactory $formFactory,
+        ?EventDispatcherInterface $dispatcher = null,
+        ?ParserResolver $parserResolver = null,
+    ) {
+        parent::__construct($dispatcher, $parserResolver);
+    }
+
     public function onModuleConfigure(HookRenderEvent $event): void
     {
-        $vars = [];
+        $data = [
+            'force_phone'     => (bool) ForcePhone::getConfigValue('force_phone', false),
+            'force_cellphone' => (bool) ForcePhone::getConfigValue('force_cellphone', false),
+            'force_one'       => (bool) ForcePhone::getConfigValue('force_one', false),
+            'validate_format' => (bool) ForcePhone::getConfigValue('validate_format', false),
+        ];
 
-        if (null !== $params = ModuleConfigQuery::create()->findByModuleId(ForcePhone::getModuleId())) {
-            /** @var ModuleConfig $param */
-            foreach ($params as $param) {
-                $vars[ $param->getName() ] = $param->getValue();
-            }
-        }
+        $form = $this->formFactory->createForm(ConfigForm::getName(), data: $data);
 
         $event->add(
-            $this->render('force-phone/module-configuration.html', $vars)
+            $this->render('ForcePhone/module-configuration.html.twig', ['form' => $form->createView()->getView()])
         );
     }
 
     public static function getSubscribedHooks(): array
     {
         return [
-            "module.configuration" => [
+            'module.configuration' => [
                 [
-                    "type" => "back",
-                    "method" => "onModuleConfigure"
-                ]
-            ]
+                    'type'   => 'back',
+                    'method' => 'onModuleConfigure',
+                ],
+            ],
         ];
     }
 }

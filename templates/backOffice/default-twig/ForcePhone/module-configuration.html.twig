@@ -1,0 +1,52 @@
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">{{ 'Force Phone Configuration'|trans({}, 'forcephone.bo.default') }}</h5>
+    </div>
+    <div class="card-body">
+        <p>{{ 'Please check below the phone numbers that must be mandatory in the customer and addresses forms'|trans({}, 'forcephone.bo.default') }}</p>
+
+        {{ form_start(form, {action: path('forcephone_config_save'), method: 'post', attr: {novalidate: 'novalidate'}}) }}
+
+        <div class="mb-3 form-check">
+            {{ form_widget(form.force_phone, {attr: {class: 'form-check-input'}}) }}
+            {{ form_label(form.force_phone, null, {label_attr: {class: 'form-check-label'}}) }}
+            {{ form_errors(form.force_phone) }}
+        </div>
+
+        <div class="mb-3 form-check">
+            {{ form_widget(form.force_cellphone, {attr: {class: 'form-check-input'}}) }}
+            {{ form_label(form.force_cellphone, null, {label_attr: {class: 'form-check-label'}}) }}
+            {{ form_errors(form.force_cellphone) }}
+        </div>
+
+        <div class="mb-3 form-check">
+            {{ form_widget(form.force_one, {attr: {class: 'form-check-input'}}) }}
+            {{ form_label(form.force_one, null, {label_attr: {class: 'form-check-label'}}) }}
+            {{ form_errors(form.force_one) }}
+        </div>
+
+        <div class="mb-3 form-check">
+            {{ form_widget(form.validate_format, {attr: {class: 'form-check-input'}}) }}
+            {{ form_label(form.validate_format, null, {label_attr: {class: 'form-check-label'}}) }}
+            {{ form_errors(form.validate_format) }}
+        </div>
+
+        {% do form.force_phone.setRendered %}
+        {% do form.force_cellphone.setRendered %}
+        {% do form.force_one.setRendered %}
+        {% do form.validate_format.setRendered %}
+
+        <div class="d-flex gap-2 mt-3">
+            <button type="submit" name="save_mode" value="stay" class="btn btn-primary">
+                <i class="bi bi-save"></i>
+                {{ 'Save'|trans }}
+            </button>
+            <a href="/admin/modules" class="btn btn-secondary">
+                {{ 'Close'|trans }}
+            </a>
+        </div>
+
+        {{ form_rest(form) }}
+        {{ form_end(form, {render_rest: false}) }}
+    </div>
+</div>
