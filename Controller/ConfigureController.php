@@ -18,11 +18,9 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
-use Thelia\Core\Thelia;
 use Thelia\Core\Translation\Translator;
 use Thelia\Form\Exception\FormValidationException;
 use Thelia\Tools\URL;
-use Thelia\Tools\Version\Version;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/admin/module/ForcePhone', name: 'forcephone_config')]
@@ -80,11 +78,6 @@ class ConfigureController extends BaseAdminController
             $configurationForm,
             $ex
         );
-
-        // Before 2.2, the errored form is not stored in session
-        if (Version::test(Thelia::THELIA_VERSION, '2.2', false, "<")) {
-            return $this->render('module-configure', [ 'module_code' => 'ForcePhone' ]);
-        }
 
         return $this->generateRedirect(URL::getInstance()->absoluteUrl('/admin/module/ForcePhone'));
     }
