@@ -57,7 +57,8 @@ class ConfigureController extends BaseAdminController
             );
 
             // Redirect to the success URL,
-            if ($requestStack->getCurrentRequest()?->get('save_mode') === 'stay') {
+            $request = $requestStack->getCurrentRequest();
+            if ($request?->attributes->get('save_mode', $request->query->get('save_mode', $request->request->get('save_mode'))) === 'stay') {
                 // If we have to stay on the same page, redisplay the configuration page/
                 $url = '/admin/module/ForcePhone';
             } else {
