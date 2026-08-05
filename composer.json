@@ -4,8 +4,7 @@
   "type": "thelia-module",
   "require": {
     "thelia/installer": "~1.1",
-    "giggsey/libphonenumber-for-php": "^8.10",
-    "thelia/open-api-module": "*"
+    "giggsey/libphonenumber-for-php": "^8.10"
   },
   "extra": {
     "installer-name": "ForcePhone"
